@@ -4,9 +4,9 @@ import sys
 import time
 
 if __name__ == "__main__":
-    print("[*] Brown Launcher Console - Alpha Launcher")
+    print("[*] Brown Launcher Console - Beta Launcher")
     time.sleep(1)
-    print("[*] Aviable version(s) : 1.16.5 - More are comming")
+    print("[*] Aviable version(s) : Every Vanilla + Fabric Versions")
     time.sleep(2)
     print("[*] This window will be used to show you logs, you cant disable it for good reasons")
     app = QApplication(sys.argv)
