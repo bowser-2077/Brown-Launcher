@@ -10,7 +10,7 @@ from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from core.launcher import start_minecraft, get_all_profiles, install_version
 import minecraft_launcher_lib.fabric as fabric_lib
 
-mc_base_version = "1.16.5"  # Pour bouton Fabric
+mc_base_version = "1.16.5"
 
 
 class LauncherUI(QWidget):
@@ -56,7 +56,7 @@ class LauncherUI(QWidget):
     def init_ui(self):
         layout = QVBoxLayout()
 
-        # Logo
+        # logo
         logo = QLabel()
         logo_path = "assets/logo.png"
         if os.path.exists(logo_path):
@@ -71,18 +71,18 @@ class LauncherUI(QWidget):
         logo.setAlignment(Qt.AlignCenter)
         layout.addWidget(logo)
 
-        # Pseudo
+       
         self.pseudo_input = QLineEdit()
         self.pseudo_input.setPlaceholderText("Minecraft Username")
         self.pseudo_input.textChanged.connect(self.update_skin_preview)
         layout.addWidget(self.pseudo_input)
 
-        # Skin preview
+       
         self.skin_label = QLabel("Enter a username to display the skin")
         self.skin_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.skin_label)
 
-        # RAM
+       
         ram_layout = QHBoxLayout()
         ram_label = QLabel("RAM :")
         ram_label.setFixedWidth(80)
@@ -92,7 +92,7 @@ class LauncherUI(QWidget):
         ram_layout.addWidget(self.ram_select)
         layout.addLayout(ram_layout)
 
-        # Sélecteur de profil
+       
         profile_layout = QHBoxLayout()
         profile_label = QLabel("Version :")
         profile_label.setFixedWidth(80)
@@ -102,13 +102,13 @@ class LauncherUI(QWidget):
         profile_layout.addWidget(self.profile_select)
         layout.addLayout(profile_layout)
 
-        # Progress bar
+    
         self.progress_bar = QProgressBar()
         self.progress_bar.setValue(0)
         self.progress_bar.setVisible(False)
         layout.addWidget(self.progress_bar)
 
-        # Bouton de lancement
+  
         self.start_btn = QPushButton("Start Minecraft")
         self.start_btn.setFixedHeight(40)
         self.start_btn.setMaximumWidth(200)
@@ -120,7 +120,7 @@ class LauncherUI(QWidget):
         self.start_btn.clicked.connect(self.launch_game)
         self.start_btn.setCursor(Qt.PointingHandCursor)
 
-        # Centrage du bouton
+       
         btn_layout = QHBoxLayout()
         btn_layout.addStretch()
         btn_layout.addWidget(self.start_btn)
@@ -182,13 +182,13 @@ class LauncherUI(QWidget):
         self.progress_bar.setValue(0)
         self.progress_bar.setFormat("Preparing.....")
 
-        # Thread de lancement
+
         self.launch_thread = LaunchThread(pseudo, ram, profile)
         self.launch_thread.finished.connect(self.on_launch_done)
         self.launch_thread.error.connect(self.on_launch_error)
         self.launch_thread.start()
 
-        # Animation de la progress bar
+  
         self.progress_timer = QTimer()
         self.progress_timer.timeout.connect(self.animate_progress)
         self.progress_timer.start(100)
