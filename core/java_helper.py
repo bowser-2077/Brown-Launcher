@@ -7,7 +7,7 @@ def ensure_java8():
     # PATH!
     if shutil.which("java"):
         print("[*] Java is installed, GG!")
-        return "java"  # Utilisera celui du système
+        return "java"  
 
     print("[!] Java is not installed :( = Downloading")
 
