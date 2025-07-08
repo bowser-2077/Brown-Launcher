@@ -1,8 +1,8 @@
 import os, json, subprocess
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton,
-    QHBoxLayout, QComboBox, QProgressBar, QMessageBox, QApplication,
-    QCheckBox, QTextEdit, QTabWidget
+    QHBoxLayout, QComboBox, QProgressBar, QMessageBox, QTextEdit,
+    QApplication, QCheckBox, QTabWidget
 )
 from PySide6.QtGui import QPixmap, QImage
 from PySide6.QtCore import Qt, QTimer, QUrl, QThread, Signal
@@ -12,21 +12,18 @@ from core.launcher import start_minecraft, get_all_profiles, install_version
 import minecraft_launcher_lib.fabric as fabric_lib
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
-
-
-
-
-mc_base_version = "1.16.5" 
+VERSIONS_FILE = os.path.join(base_dir, "versions.json")
+mc_base_version = "1.16.5"
 
 
 class LauncherUI(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Brown Launcher Beta")
+        self.setWindowTitle("Brown Launcher V1 Release")
         self.setFixedSize(600, 600)
         self.java_args = ""
         self.show_modded = True
-        self.base_pseudo = "OfflinePlayer"
+        self.base_pseudo = "Player"
         self.network_manager = QNetworkAccessManager()
         self.setup_ui()
 
@@ -37,18 +34,18 @@ class LauncherUI(QWidget):
         self.init_play_tab()
         self.init_server_tab()
 
+    # === Onglet "Play"
     def init_play_tab(self):
         tab = QWidget()
         layout = QVBoxLayout(tab)
 
-        
+        # Logo
         logo = QLabel()
         logo_path = os.path.join(base_dir, "assets", "logo.png")
         if os.path.exists(logo_path):
             pixmap = QPixmap(logo_path)
-            if not pixmap.isNull():
-                pixmap = pixmap.scaled(120, 120, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-                logo.setPixmap(pixmap)
+            if pixmap and not pixmap.isNull():
+                logo.setPixmap(pixmap.scaled(120, 120, Qt.KeepAspectRatio, Qt.SmoothTransformation))
             else:
                 logo.setText("No Logo!")
         else:
@@ -56,18 +53,18 @@ class LauncherUI(QWidget):
         logo.setAlignment(Qt.AlignCenter)
         layout.addWidget(logo)
 
-        
+        # Pseudo
         self.pseudo_input = QLineEdit()
         self.pseudo_input.setPlaceholderText("Minecraft Username")
         self.pseudo_input.textChanged.connect(self.update_skin_preview)
         layout.addWidget(self.pseudo_input)
 
-        
+        # Skin preview
         self.skin_label = QLabel("Enter a username to display the skin")
         self.skin_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.skin_label)
 
-        
+        # RAM
         ram_layout = QHBoxLayout()
         ram_label = QLabel("RAM :")
         ram_label.setFixedWidth(80)
@@ -77,7 +74,7 @@ class LauncherUI(QWidget):
         ram_layout.addWidget(self.ram_select)
         layout.addLayout(ram_layout)
 
-  
+        # Profil
         profile_layout = QHBoxLayout()
         profile_label = QLabel("Version :")
         profile_label.setFixedWidth(80)
@@ -87,47 +84,71 @@ class LauncherUI(QWidget):
         profile_layout.addWidget(self.profile_select)
         layout.addLayout(profile_layout)
 
-
+        # ProgressBar
         self.progress_bar = QProgressBar()
-        self.progress_bar.setValue(0)
         self.progress_bar.setVisible(False)
         layout.addWidget(self.progress_bar)
 
-
+        # Bouton Lancer
         self.start_btn = QPushButton("Start Minecraft")
         self.start_btn.setFixedHeight(40)
         self.start_btn.clicked.connect(self.launch_game)
         layout.addWidget(self.start_btn)
 
-      
+        # Bouton Paramètres
         self.settings_btn = QPushButton("Settings")
         self.settings_btn.clicked.connect(self.show_settings)
         layout.addWidget(self.settings_btn)
 
-       
+        # Zone Paramètres
         self.settings_widget = QWidget()
         self.settings_widget.setVisible(False)
-        self.settings_layout = QVBoxLayout()
+        settings_layout = QVBoxLayout()
 
-        self.show_modded_check = QCheckBox("Afficher les versions modées")
-        self.settings_layout.addWidget(self.show_modded_check)
+        self.show_modded_check = QCheckBox("Display Modded Versions")
+        settings_layout.addWidget(self.show_modded_check)
 
         self.java_args_input = QLineEdit()
-        self.java_args_input.setPlaceholderText("Arguments Java supplémentaires")
-        self.settings_layout.addWidget(self.java_args_input)
+        self.java_args_input.setPlaceholderText("Java Args")
+        settings_layout.addWidget(self.java_args_input)
 
         self.base_pseudo_input = QLineEdit()
-        self.base_pseudo_input.setPlaceholderText("Pseudo par défaut")
-        self.settings_layout.addWidget(self.base_pseudo_input)
+        self.base_pseudo_input.setPlaceholderText("Default Username")
+        settings_layout.addWidget(self.base_pseudo_input)
 
-        apply_btn = QPushButton("Appliquer les paramètres")
+        apply_btn = QPushButton("Apply")
         apply_btn.clicked.connect(self.apply_settings)
-        self.settings_layout.addWidget(apply_btn)
+        settings_layout.addWidget(apply_btn)
 
-        self.settings_widget.setLayout(self.settings_layout)
+        self.settings_widget.setLayout(settings_layout)
         layout.addWidget(self.settings_widget)
 
         self.tabs.addTab(tab, "Play")
+
+    # === Onglet "Serveur"
+    def init_server_tab(self):
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+
+        self.server_version = QComboBox()
+        self.load_server_versions()
+        layout.addWidget(QLabel("PaperMC Version"))
+        layout.addWidget(self.server_version)
+
+        self.server_ram = QComboBox()
+        self.server_ram.addItems(["1024M", "2G", "4G", "6G", "8G"])
+        layout.addWidget(QLabel("RAM Serveur"))
+        layout.addWidget(self.server_ram)
+
+        btn = QPushButton("Start Server")
+        btn.clicked.connect(self.start_server)
+        layout.addWidget(btn)
+
+        self.console = QTextEdit()
+        self.console.setReadOnly(True)
+        layout.addWidget(self.console)
+
+        self.tabs.addTab(tab, "Server")
 
     def show_settings(self):
         self.settings_widget.setVisible(not self.settings_widget.isVisible())
@@ -136,7 +157,6 @@ class LauncherUI(QWidget):
         self.show_modded = self.show_modded_check.isChecked()
         self.java_args = self.java_args_input.text().strip()
         self.base_pseudo = self.base_pseudo_input.text().strip()
-        print(f"[*] Parameters - indev : Modded={self.show_modded}, Java Args='{self.java_args}', Pseudo='{self.base_pseudo}'")
 
     def refresh_profiles(self):
         self.profile_select.clear()
@@ -185,8 +205,7 @@ class LauncherUI(QWidget):
         self.timer.start(100)
 
     def animate_progress(self):
-        v = self.progress_bar.value()
-        self.progress_bar.setValue((v + 3) % 100)
+        self.progress_bar.setValue((self.progress_bar.value() + 3) % 100)
 
     def on_launch_done(self):
         self.timer.stop()
@@ -197,61 +216,51 @@ class LauncherUI(QWidget):
         self.timer.stop()
         self.progress_bar.setVisible(False)
         self.start_btn.setEnabled(True)
-        QMessageBox.critical(self, "Erreur", f"Erreur de lancement :\n{msg}")
-
-    def init_server_tab(self):
-        tab = QWidget()
-        layout = QVBoxLayout(tab)
-
-        self.server_version = QComboBox()
-        self.load_server_versions()
-        layout.addWidget(QLabel("PaperMC Version"))
-        layout.addWidget(self.server_version)
-
-        self.server_ram = QComboBox()
-        self.server_ram.addItems(["1024M", "2G", "4G", "6G", "8G"])
-        layout.addWidget(QLabel("Allocated ram to the server"))
-        layout.addWidget(self.server_ram)
-
-        btn = QPushButton("Start!")
-        btn.clicked.connect(self.start_server)
-        layout.addWidget(btn)
-
-        self.console = QTextEdit()
-        self.console.setReadOnly(True)
-        layout.addWidget(self.console)
-
-        self.tabs.addTab(tab, "Server - Indev")
+        QMessageBox.critical(self, "Error", f"Error :\n{msg}")
 
     def load_server_versions(self):
         try:
-            with open("versions.json", "r") as f:
+            with open(VERSIONS_FILE, "r") as f:
                 data = json.load(f)
             for v in sorted(data["versions"], reverse=True):
                 self.server_version.addItem(v)
         except Exception as e:
-            QMessageBox.critical(self, "Erreur", f"Cant load version list :\n{e}")
+            QMessageBox.critical(self, "Error", f"Error :\n{e}")
             self.server_version.addItem(mc_base_version)
 
     def start_server(self):
         version = self.server_version.currentText()
         ram = self.server_ram.currentText()
         try:
-            data = json.load(open("versions.json"))
+            with open(VERSIONS_FILE, "r") as f:
+                data = json.load(f)
             url = data["versions"][version]
-            jar = os.path.join("server", f"paper-{version}.jar")
+            jar_name = f"paper-{version}.jar"
+            jar_path = os.path.join("server", jar_name)
             os.makedirs("server", exist_ok=True)
-            if not os.path.exists(jar):
+
+            if not os.path.exists(jar_path) or os.path.getsize(jar_path) < 10000:
                 import requests
                 r = requests.get(url)
-                with open(jar, "wb") as f:
-                    f.write(r.content)
-            cmd = ["java", f"-Xmx{ram}", "-jar", jar, "nogui"]
+                with open(jar_path, "wb") as f_out:
+                   f_out.write(r.content)
+
+            # ❗ jar_name et pas jar_path
+            cmd = ["java", f"-Xmx{ram}", "-jar", jar_name, "nogui"]
             self.console.clear()
-            self.proc = subprocess.Popen(cmd, cwd="server", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            self.proc = subprocess.Popen(
+                cmd, cwd="server",
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True
+            )
             QTimer.singleShot(100, self.poll_console)
+
         except Exception as e:
-            self.console.append(f"[Erreur] {e}")
+            self.console.append(f"[Error] {e}")
+
+
+
 
     def poll_console(self):
         if self.proc.poll() is None:
@@ -260,7 +269,7 @@ class LauncherUI(QWidget):
                 self.console.append(line.rstrip())
             QTimer.singleShot(50, self.poll_console)
         else:
-            self.console.append("[*] Server Stopped.")
+            self.console.append("[*] Serveur arrêté")
 
 
 class LaunchThread(QThread):

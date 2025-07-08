@@ -7,12 +7,12 @@ import minecraft_launcher_lib.fabric as fabric_lib
 from core.java_helper import ensure_java8
 from minecraft_launcher_lib.utils import get_available_versions
 
-
+# === CONFIGURATION ===
 mc_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "minecraft_data"))
 authlib_jar_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "libs", "authlib-injector.jar"))
-authlib_url = "https://auth-demo.yushi.moe"  
+authlib_url = "https://auth-demo.yushi.moe"  # Authlib demo server
 
-
+# === UTILS ===
 def get_offline_uuid(pseudo):
     return str(uuid.uuid3(uuid.NAMESPACE_DNS, pseudo)).replace("-", "")
 
@@ -23,7 +23,7 @@ def list_installed_profiles():
     return [v for v in os.listdir(versions_dir) if os.path.isdir(os.path.join(versions_dir, v))]
 
 def is_stable_release(version_id):
-
+    # Accepte uniquement les versions du style 1.16.5, 1.20.4 etc.
     return version_id.count('.') == 2 and version_id.replace(".", "").isdigit()
 
 def get_all_profiles():
@@ -45,22 +45,23 @@ def get_all_profiles():
         if not is_stable_release(name):
             continue
 
-      
+        # Vanilla
         profiles.append(name if name in installed_versions else f"{name} ⏬")
 
-   
+        # Fabric
         fabric_profile = f"fabric-loader-{fabric_loader}-{name}"
         profiles.append(fabric_profile if fabric_profile in installed_versions else f"{fabric_profile} ⏬")
 
     return profiles
 
 
-
+# === INSTALLER UNE VERSION ===
 def install_version(profile: str):
     """Installe une version Minecraft (vanilla ou fabric) en fonction du profil donné."""
     version_dir = os.path.join(mc_dir, "versions", profile)
     version_json = os.path.join(version_dir, f"{profile}.json")
 
+    # Nettoyage du nom si nécessaire
     profile = profile.replace(" ⏬", "").strip()
 
     if os.path.exists(version_json):
@@ -70,12 +71,12 @@ def install_version(profile: str):
     print(f"[*] Installation demandée pour : {profile}")
 
     try:
-      
+        # Détection Fabric
         if "fabric" in profile or "fabric-loader" in profile:
             print("[*] Installation de Fabric...")
 
             if profile.startswith("fabric-loader"):
-               
+                # Exemple : fabric-loader-0.16.14-1.16.5
                 try:
                     parts = profile.split("-")
                     loader_version = parts[2]
@@ -89,7 +90,7 @@ def install_version(profile: str):
                     minecraft_directory=mc_dir
                 )
             else:
-          
+                # Sinon, déduction simple
                 base_version = profile.replace("fabric-", "")
                 fabric_lib.install_fabric(
                     minecraft_version=base_version,
@@ -97,7 +98,7 @@ def install_version(profile: str):
                 )
 
         else:
-         
+            # Vanilla
             print(f"[*] Installation de Minecraft Vanilla {profile}...")
             minecraft_launcher_lib.install.install_minecraft_version(profile, mc_dir)
 
@@ -106,30 +107,30 @@ def install_version(profile: str):
     except Exception as e:
         print(f"[!] Échec de l'installation de {profile} : {e}")
 
-
+# === LANCEMENT DE MINECRAFT ===
 def start_minecraft(pseudo, ram, profile="1.20.4"):
     os.makedirs(mc_dir, exist_ok=True)
     print(f"[*] Profil demandé : {profile}")
 
-    
+    # Nettoyage du nom si nécessaire
     profile = profile.replace(" ⏬", "").strip()
 
     version_dir = os.path.join(mc_dir, "versions", profile)
     version_json = os.path.join(version_dir, f"{profile}.json")
 
-    
+    # === Installation si nécessaire ===
     if not os.path.exists(version_json):
         try:
             if profile.startswith("fabric-") or "-fabric" in profile or "fabric-loader" in profile:
                 print(f"[*] Fabric non trouvé, installation...")
 
-               
+                # Déduire version de base depuis profile : ex. "fabric-loader-0.16.14-1.16.5"
                 try:
-                    base_version = profile.split("-")[-1]  
+                    base_version = profile.split("-")[-1]  # récupère "1.16.5"
                 except:
-                    base_version = "1.16.5" 
+                    base_version = "1.16.5"  # fallback
 
-                
+                # Liste des loaders
                 all_loaders = fabric_lib.get_all_loader_versions()
                 loader = next((l["loader"]["version"] for l in all_loaders if l["stable"] is True), None)
 
@@ -150,10 +151,10 @@ def start_minecraft(pseudo, ram, profile="1.20.4"):
             print(f"[!] Échec de l'installation de la version {profile} : {e}")
             return
 
-    
+    # === Java détecté ===
     java_path = ensure_java8()
 
- 
+    # === Options de lancement ===
     options = {
         "username": pseudo,
         "uuid": get_offline_uuid(pseudo),
