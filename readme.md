@@ -39,6 +39,20 @@ There we go, your launcher is ready!
 
 There you go, your launcher is ready!
 
+# Features
+ - Light executable
+ - Fabric mod support
+ - Crack only client - using authlib-injector
+ - Skin Preview before use
+ - Custom allocated RAM
+ - Integrated PapertMC server creator
+ - Auto JAVA Install if needed
+ - UI with PySide6
+ - Clean logs system
+
+---
+  
+
 # Usage
 
 You can use Brown Launcher to play Minecraft, there is not any real custom usage, you can just add mod support by urself.
