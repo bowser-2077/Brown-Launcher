@@ -60,11 +60,11 @@ If you fork this repository, please credit me somewhere, thanks!
 
 # Roadmap
 
- - Mod Support by default
- - Multiple Versions Support
- - Better Interface
- - Mods Marketplace?
- - Cosmetics?? (no)
+ - Mod Support by default -> Done
+ - Multiple Versions Support -> Done
+ - Better Interface -> Working on it
+ - Mods Marketplace? -> Idea for now
+ - Cosmetics?? -> (no)
 
 # Gallery
 
