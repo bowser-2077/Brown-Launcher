@@ -2,7 +2,7 @@
 ![ChatGPT Image 7 juil  2025, 17_44_50](https://github.com/user-attachments/assets/17118368-6ffb-4b76-b619-b8923af206c1)
 
 ### Whats brown launcher?
-Brown Launcher is a lightwheigt minecraft launcher for the 1.16.5 (Only for now...)
+Brown Launcher is a lightwheigt minecraft launcher for vanilla and fabric
 
 ### Mod Support?
 Unfortunately, not for now, its planned but idk when this will come. But you can install mods manually by installing forge or fabric on the "**minecraft_data**" folder after the first launch.
