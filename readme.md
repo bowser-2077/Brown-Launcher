@@ -51,3 +51,11 @@ If you fork this repository, please credit me somewhere, thanks!
  - Better Interface
  - Mods Marketplace?
  - Cosmetics?? (no)
+
+# Gallery
+
+![image](https://github.com/user-attachments/assets/6798b687-effe-437d-929a-05dfddca0216)
+![image](https://github.com/user-attachments/assets/1b0feac9-b1c3-4a93-932d-00951ee6b7df)
+
+
+
