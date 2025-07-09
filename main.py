@@ -94,6 +94,43 @@ QScrollBar::sub-page:horizontal {
 
 """
 
+import os, sys, requests, zipfile, io, subprocess
+
+GITHUB_API = "https://api.github.com/repos/bowser-2077/Brown-Launcher/releases/latest"
+LOCAL_VER_FILE = "version.txt"
+
+def get_latest_version():
+    resp = requests.get(GITHUB_API)
+    resp.raise_for_status()
+    data = resp.json()
+    return data["tag_name"], data["assets"][0]["browser_download_url"]
+
+def read_local_version():
+    if os.path.exists(LOCAL_VER_FILE):
+        return open(LOCAL_VER_FILE).read().strip()
+    return None
+
+def write_local_version(ver):
+    with open(LOCAL_VER_FILE, "w") as f:
+        f.write(ver)
+
+def do_update():
+    latest_ver, url = get_latest_version()
+    local_ver = read_local_version()
+    if local_ver != latest_ver:
+        print(f"[UPDATER] New Version Found : {latest_ver} (Current : {local_ver})")
+        resp = requests.get(url)
+        resp.raise_for_status()
+        z = zipfile.ZipFile(io.BytesIO(resp.content))
+        z.extractall(os.getcwd())
+        write_local_version(latest_ver)
+        print("[UPDATER] Update Installed. Please Restart The Launcher")
+        python = sys.executable
+        os.execl(python, python, *sys.argv)
+    else:
+        print(f"[UPDATER] Launcher UpToDate: {local_ver}")
+do_update()
+
 if __name__ == "__main__":
     print("[*] Brown Launcher Console - Release V1 Launcher")
     time.sleep(0.3)
