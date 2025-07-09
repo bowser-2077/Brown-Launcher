@@ -15,6 +15,10 @@ Yes, brown launcher is a cracked launcher by default and will never add microsof
 
 Since brown launcher is open source, you can check the sourcecode and compile it by yourself, I am not like TLauncher :)
 
+### How to update?
+
+Brown launcher have an integrated autoupdater, it will check the version at every launch.
+
 ---
 
 ## How To Install
