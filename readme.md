@@ -4,6 +4,9 @@
 ### Whats brown launcher?
 Brown Launcher is a lightwheigt minecraft launcher for vanilla and fabric
 
+### Note
+Its possible that the exe version dont work, please install the launcher via the source code
+
 ### Mod Support?
 Unfortunately, not for now, its planned but idk when this will come. But you can install mods manually by installing forge or fabric on the "**minecraft_data**" folder after the first launch.
 
@@ -13,7 +16,7 @@ Yes, brown launcher is a cracked launcher by default and will never add microsof
 
 ### Is there viruses?
 
-Since brown launcher is open source, you can check the sourcecode and compile it by yourself, I am not like TLauncher :)
+Since brown launcher is open source, you can check the sourcecode and compile it by yourself, I am not like TLauncher wich is closed source :)
 
 ### How to update?
 
