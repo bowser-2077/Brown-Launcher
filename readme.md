@@ -101,7 +101,7 @@ python main.py
 * 🧠 Custom RAM allocation
 * 🖥️ Integrated PaperMC server creator
 * ☕ Automatic Java installation if missing
-* 🎨 Modern UI built with **PySide6** (pain included 😄)
+* 🎨 Modern UI built with **PySide6** (It was a pain to learn 😄)
 * 📜 Clean and readable log system
 
 ---
