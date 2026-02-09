@@ -2,10 +2,6 @@
 
 <img width="500" height="500" alt="ChatGPT_Image_Feb_9__2026__04_42_05_PM-removebg-preview(1)" src="https://github.com/user-attachments/assets/dbd30ded-03b9-4b7a-acbc-7f939db2026a" />
 
-
-
-
-
 ### Whats CascadeMC?
 CascadeMC is a lightwheigt minecraft launcher for vanilla and fabric
 
