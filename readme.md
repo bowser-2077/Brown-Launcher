@@ -1,6 +1,8 @@
 # CascadeMC
 
-<img width="1024" height="1024" alt="ChatGPT Image Feb 9, 2026, 04_42_05 PM" src="https://github.com/user-attachments/assets/13fc7094-0a54-4a73-a1ba-0a8f4c62e5b1" />
+<img width="500" height="500" alt="ChatGPT_Image_Feb_9__2026__04_42_05_PM-removebg-preview" src="https://github.com/user-attachments/assets/5e444b27-8aa7-4477-a9cc-458685f79424" />
+
+
 
 
 ### Whats CascadeMC?
