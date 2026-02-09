@@ -1,26 +1,24 @@
-# Brown Launcher
-![ChatGPT Image 7 juil  2025, 17_44_50](https://github.com/user-attachments/assets/17118368-6ffb-4b76-b619-b8923af206c1)
+# CascadeMC
 
-### Whats brown launcher?
-Brown Launcher is a lightwheigt minecraft launcher for vanilla and fabric
+<img width="1024" height="1024" alt="ChatGPT Image Feb 9, 2026, 04_42_05 PM" src="https://github.com/user-attachments/assets/13fc7094-0a54-4a73-a1ba-0a8f4c62e5b1" />
+
+
+### Whats CascadeMC?
+CascadeMC is a lightwheigt minecraft launcher for vanilla and fabric
 
 ### Note
 Its possible that the exe version dont work, please install the launcher via the source code
 
 ### Mod Support?
-Unfortunately, not for now, its planned but idk when this will come. But you can install mods manually by installing forge or fabric on the "**minecraft_data**" folder after the first launch.
+Yes but its untested for now! You can try it anyway
 
 ### Crack Support?
 
-Yes, brown launcher is a cracked launcher by default and will never add microsoft auth system.
+Yes, CascadeMC is a cracked launcher by default and will never add microsoft auth system.
 
 ### Is there viruses?
 
-Since brown launcher is open source, you can check the sourcecode and compile it by yourself, I am not like TLauncher wich is closed source :)
-
-### How to update?
-
-Brown launcher have an integrated autoupdater, it will check the version at every launch.
+Since CascadeMC is open source, you can check the sourcecode and compile it by yourself, I am not like TLauncher wich is closed source :)
 
 ---
 
@@ -54,7 +52,7 @@ There you go, your launcher is ready!
  - Custom allocated RAM
  - Integrated PapertMC server creator
  - Auto JAVA Install if needed
- - UI with PySide6
+ - UI with PySide6 -> It was pain...
  - Clean logs system
 
 ---
@@ -62,7 +60,7 @@ There you go, your launcher is ready!
 
 # Usage
 
-You can use Brown Launcher to play Minecraft, there is not any real custom usage, you can just add mod support by urself.
+You can use CascadeMC to play Minecraft, there is not any real custom usage, you can just add mods by urself.
 If you fork this repository, please credit me somewhere, thanks!
 
 # Roadmap
@@ -70,13 +68,9 @@ If you fork this repository, please credit me somewhere, thanks!
  - Mod Support by default -> Done
  - Multiple Versions Support -> Done
  - Better Interface -> Done
+ - Server support -> Done
+ - Multiplayer support -> Done (Authlib Injector)
  - Mods Marketplace? -> Maybe...
- - Cosmetics?? -> (no)
-
-# Gallery
-
-![image](https://github.com/user-attachments/assets/6798b687-effe-437d-929a-05dfddca0216)
-![image](https://github.com/user-attachments/assets/1b0feac9-b1c3-4a93-932d-00951ee6b7df)
-
+ - Cosmetics?? -> Not planed
 
 
