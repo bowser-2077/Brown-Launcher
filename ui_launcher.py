@@ -9,7 +9,10 @@ from PySide6.QtCore import Qt, QTimer, QUrl, QThread, Signal
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 
 from core.launcher import start_minecraft, get_all_profiles, install_version
+from core.java_helper import ensure_java8
 import minecraft_launcher_lib.fabric as fabric_lib
+import requests
+import urllib.parse
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
 VERSIONS_FILE = os.path.join(base_dir, "versions.json")
@@ -19,12 +22,14 @@ mc_base_version = "1.16.5"
 class LauncherUI(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Brown Launcher V1 Release")
+        self.setWindowTitle("CascadeMC")
         self.setFixedSize(600, 600)
         self.java_args = ""
         self.show_modded = True
         self.base_pseudo = "Player"
         self.network_manager = QNetworkAccessManager()
+        self.server_process = None
+        self.server_thread = None
         self.setup_ui()
 
     def setup_ui(self):
@@ -34,7 +39,7 @@ class LauncherUI(QWidget):
         self.init_play_tab()
         self.init_server_tab()
 
-    # === Onglet "Play"
+    # === Play Tab ===
     def init_play_tab(self):
         tab = QWidget()
         layout = QVBoxLayout(tab)
@@ -53,7 +58,7 @@ class LauncherUI(QWidget):
         logo.setAlignment(Qt.AlignCenter)
         layout.addWidget(logo)
 
-        # Pseudo
+        # Username
         self.pseudo_input = QLineEdit()
         self.pseudo_input.setPlaceholderText("Minecraft Username")
         self.pseudo_input.textChanged.connect(self.update_skin_preview)
@@ -74,7 +79,7 @@ class LauncherUI(QWidget):
         ram_layout.addWidget(self.ram_select)
         layout.addLayout(ram_layout)
 
-        # Profil
+        # Profile
         profile_layout = QHBoxLayout()
         profile_label = QLabel("Version :")
         profile_label.setFixedWidth(80)
@@ -89,18 +94,18 @@ class LauncherUI(QWidget):
         self.progress_bar.setVisible(False)
         layout.addWidget(self.progress_bar)
 
-        # Bouton Lancer
+        # Start Button
         self.start_btn = QPushButton("Start Minecraft")
         self.start_btn.setFixedHeight(40)
         self.start_btn.clicked.connect(self.launch_game)
         layout.addWidget(self.start_btn)
 
-        # Bouton Paramètres
+        # Settings Button
         self.settings_btn = QPushButton("Settings")
         self.settings_btn.clicked.connect(self.show_settings)
         layout.addWidget(self.settings_btn)
 
-        # Zone Paramètres
+        # Settings Area
         self.settings_widget = QWidget()
         self.settings_widget.setVisible(False)
         settings_layout = QVBoxLayout()
@@ -125,7 +130,7 @@ class LauncherUI(QWidget):
 
         self.tabs.addTab(tab, "Play")
 
-    # === Onglet "Serveur"
+    # === Server Tab ===
     def init_server_tab(self):
         tab = QWidget()
         layout = QVBoxLayout(tab)
@@ -137,12 +142,25 @@ class LauncherUI(QWidget):
 
         self.server_ram = QComboBox()
         self.server_ram.addItems(["1024M", "2G", "4G", "6G", "8G"])
-        layout.addWidget(QLabel("RAM Serveur"))
+        layout.addWidget(QLabel("Server RAM"))
         layout.addWidget(self.server_ram)
 
-        btn = QPushButton("Start Server")
-        btn.clicked.connect(self.start_server)
-        layout.addWidget(btn)
+        # Server control buttons
+        button_layout = QHBoxLayout()
+        self.start_server_btn = QPushButton("Start Server")
+        self.start_server_btn.clicked.connect(self.start_server)
+        self.stop_server_btn = QPushButton("Stop Server")
+        self.stop_server_btn.clicked.connect(self.stop_server)
+        self.stop_server_btn.setEnabled(False)
+        
+        button_layout.addWidget(self.start_server_btn)
+        button_layout.addWidget(self.stop_server_btn)
+        layout.addLayout(button_layout)
+
+        # Progress bar for downloads
+        self.server_progress = QProgressBar()
+        self.server_progress.setVisible(False)
+        layout.addWidget(self.server_progress)
 
         self.console = QTextEdit()
         self.console.setReadOnly(True)
@@ -222,54 +240,165 @@ class LauncherUI(QWidget):
         try:
             with open(VERSIONS_FILE, "r") as f:
                 data = json.load(f)
-            for v in sorted(data["versions"], reverse=True):
+            # Remove duplicates by using set, then sort
+            unique_versions = list(set(data["versions"].keys()))
+            for v in sorted(unique_versions, reverse=True):
                 self.server_version.addItem(v)
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Error :\n{e}")
+            QMessageBox.critical(self, "Error", f"Error:\n{e}")
             self.server_version.addItem(mc_base_version)
 
     def start_server(self):
         version = self.server_version.currentText()
         ram = self.server_ram.currentText()
+        
+        self.start_server_btn.setEnabled(False)
+        self.server_progress.setVisible(True)
+        self.server_progress.setValue(0)
+        self.server_progress.setFormat("[*]Starting server...")
+        
+        self.server_thread = ServerThread(version, ram)
+        self.server_thread.progress.connect(self.update_server_progress)
+        self.server_thread.output.connect(self.append_server_output)
+        self.server_thread.error.connect(self.on_server_error)
+        self.server_thread.started.connect(self.on_server_started)
+        self.server_thread.finished.connect(self.on_server_finished)
+        self.server_thread.start()
+
+    def stop_server(self):
+        if self.server_process:
+            self.server_process.terminate()
+            self.console.append("[*] Stopping server...")
+
+    def update_server_progress(self, value, text):
+        self.server_progress.setValue(value)
+        self.server_progress.setFormat(text)
+
+    def append_server_output(self, text):
+        self.console.append(text)
+
+    def on_server_error(self, error_msg):
+        self.start_server_btn.setEnabled(True)
+        self.stop_server_btn.setEnabled(False)
+        self.server_progress.setVisible(False)
+        QMessageBox.critical(self, "[!]Server Error", f"Failed to start server:\n{error_msg}")
+
+    def on_server_started(self, process):
+        self.server_process = process
+        self.stop_server_btn.setEnabled(True)
+        self.server_progress.setVisible(False)
+        self.console.clear()
+        self.console.append("[*] Server started successfully!")
+
+    def on_server_finished(self):
+        self.start_server_btn.setEnabled(True)
+        self.stop_server_btn.setEnabled(False)
+        self.server_process = None
+        self.console.append("[*] Server stopped")
+
+
+class ServerThread(QThread):
+    progress = Signal(int, str)  # value, text
+    output = Signal(str)
+    error = Signal(str)
+    started = Signal(object)  # process object
+    finished = Signal()
+
+    def __init__(self, version, ram):
+        super().__init__()
+        self.version = version
+        self.ram = ram
+        self.process = None
+        self.java_path = None
+
+    def run(self):
         try:
+            # Load versions
             with open(VERSIONS_FILE, "r") as f:
                 data = json.load(f)
-            url = data["versions"][version]
-            jar_name = f"paper-{version}.jar"
-            jar_path = os.path.join("server", jar_name)
-            os.makedirs("server", exist_ok=True)
+            
+            url = data["versions"][self.version]
+            server_dir = "server"
+            os.makedirs(server_dir, exist_ok=True)
 
+            # Extract correct JAR filename from URL
+            parsed_url = urllib.parse.urlparse(url)
+            jar_filename = os.path.basename(parsed_url.path)
+            jar_path = os.path.join(server_dir, jar_filename)
+
+            # Download JAR if needed
             if not os.path.exists(jar_path) or os.path.getsize(jar_path) < 10000:
-                import requests
-                r = requests.get(url)
-                with open(jar_path, "wb") as f_out:
-                   f_out.write(r.content)
+                self.progress.emit(25, "[*] Downloading server JAR...")
+                self.output.emit(f"[*] Downloading {jar_filename}...")
+                
+                response = requests.get(url, stream=True)
+                response.raise_for_status()
+                
+                total_size = int(response.headers.get('content-length', 0))
+                downloaded = 0
+                
+                with open(jar_path, 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        if chunk:
+                            f.write(chunk)
+                            downloaded += len(chunk)
+                            if total_size > 0:
+                                progress = 25 + int((downloaded / total_size) * 50)
+                                self.progress.emit(progress, f"[*] Downloading... {downloaded}/{total_size} bytes")
+                
+                self.output.emit(f"[*] Download completed: {jar_filename}")
 
-            # ❗ jar_name et pas jar_path
-            cmd = ["java", f"-Xmx{ram}", "-jar", jar_name, "nogui"]
-            self.console.clear()
-            self.proc = subprocess.Popen(
-                cmd, cwd="server",
+            # Generate EULA
+            self.progress.emit(75, "[*] Generating server configuration...")
+            eula_path = os.path.join(server_dir, "eula.txt")
+            with open(eula_path, "w") as f:
+                f.write("eula=true\n")
+            
+            # Generate basic server.properties
+            props_path = os.path.join(server_dir, "server.properties")
+            if not os.path.exists(props_path):
+                with open(props_path, "w") as f:
+                    f.write("# Properties File\n")
+                    f.write("motd=Brown Launcher Server\n")
+                    f.write("difficulty=easy\n")
+                    f.write("gamemode=survival\n")
+                    f.write("pvp=true\n")
+                    f.write("online-mode=false\n")
+
+            # Get Java path
+            java_path = ensure_java8()
+            self.progress.emit(90, "Starting server...")
+
+            # Start server
+            cmd = [java_path, f"-Xmx{self.ram}", "-jar", jar_filename, "nogui"]
+            self.output.emit(f"[*] Starting server with command: {' '.join(cmd)}")
+            
+            self.process = subprocess.Popen(
+                cmd,
+                cwd=server_dir,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
-                text=True
+                text=True,
+                bufsize=1,
+                universal_newlines=True
             )
-            QTimer.singleShot(100, self.poll_console)
+            
+            self.started.emit(self.process)
+            self.progress.emit(100, "Server running")
 
+            # Monitor server output
+            while self.process.poll() is None:
+                line = self.process.stdout.readline()
+                if line:
+                    self.output.emit(line.rstrip())
+            
+            # Server stopped
+            self.output.emit("[*] Server process ended")
+            
         except Exception as e:
-            self.console.append(f"[Error] {e}")
-
-
-
-
-    def poll_console(self):
-        if self.proc.poll() is None:
-            line = self.proc.stdout.readline()
-            if line:
-                self.console.append(line.rstrip())
-            QTimer.singleShot(50, self.poll_console)
-        else:
-            self.console.append("[*] Serveur arrêté")
+            self.error.emit(str(e))
+        finally:
+            self.finished.emit()
 
 
 class LaunchThread(QThread):

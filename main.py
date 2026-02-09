@@ -1,5 +1,7 @@
 from ui_launcher import LauncherUI
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QSplashScreen, QLabel, QVBoxLayout, QWidget
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QPixmap, QPainter, QColor, QFont
 import sys
 import time
 
@@ -94,54 +96,97 @@ QScrollBar::sub-page:horizontal {
 
 """
 
-import os, sys, requests, zipfile, io, subprocess
+class SplashScreen(QSplashScreen):
+    def __init__(self):
+        self.pixmap = QPixmap(450, 250)
+        self.pixmap.fill(QColor(28, 28, 28))
+        super().__init__(self.pixmap)
 
-GITHUB_API = "https://api.github.com/repos/bowser-2077/Brown-Launcher/releases/latest"
-LOCAL_VER_FILE = "version.txt"
+        self.setFixedSize(450, 250)
+        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.SplashScreen)
 
-def get_latest_version():
-    resp = requests.get(GITHUB_API)
-    resp.raise_for_status()
-    data = resp.json()
-    return data["tag_name"], data["assets"][0]["browser_download_url"]
+        self.progress = 0
 
-def read_local_version():
-    if os.path.exists(LOCAL_VER_FILE):
-        return open(LOCAL_VER_FILE).read().strip()
-    return None
+        # fake loading thing
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.advance)
+        self.timer.start(30)
 
-def write_local_version(ver):
-    with open(LOCAL_VER_FILE, "w") as f:
-        f.write(ver)
+    def advance(self):
+        self.progress += 1
+        if self.progress > 100:
+            self.timer.stop()
+        self.repaint()
 
-def do_update():
-    latest_ver, url = get_latest_version()
-    local_ver = read_local_version()
-    if local_ver != latest_ver:
-        print(f"[UPDATER] New Version Found : {latest_ver} (Current : {local_ver})")
-        resp = requests.get(url)
-        resp.raise_for_status()
-        z = zipfile.ZipFile(io.BytesIO(resp.content))
-        z.extractall(os.getcwd())
-        write_local_version(latest_ver)
-        print("[UPDATER] Update Installed. Please Restart The Launcher")
-        python = sys.executable
-        os.execl(python, python, *sys.argv)
-    else:
-        print(f"[UPDATER] Launcher UpToDate: {local_ver}")
-do_update()
+    def drawContents(self, painter):
+        painter.setRenderHint(QPainter.Antialiasing)
+        # title
+        painter.setPen(QColor(240, 240, 240))
+        painter.setFont(QFont("Segoe UI", 24, QFont.Bold))
+        painter.drawText(self.rect(), Qt.AlignCenter, "CascadeMC")
+
+        # sous le titre?
+        painter.setFont(QFont("Segoe UI", 11))
+        painter.setPen(QColor(180, 180, 180))
+        painter.drawText(
+            self.rect().adjusted(0, 40, 0, 0),
+            Qt.AlignCenter,
+            "Minecraft Launcher"
+        )
+
+        # bg
+        bar_width = 300
+        bar_height = 8
+        x = (self.width() - bar_width) // 2
+        y = self.height() - 50
+
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(QColor(50, 50, 50))
+        painter.drawRoundedRect(x, y, bar_width, bar_height, 4, 4)
+
+        # loadb
+        fill_width = int(bar_width * (self.progress / 100))
+        painter.setBrush(QColor(59, 130, 246))
+        painter.drawRoundedRect(x, y, fill_width, bar_height, 4, 4)
+
+        # loadtxt
+        painter.setFont(QFont("Segoe UI", 10))
+        painter.setPen(QColor(150, 150, 150))
+        painter.drawText(
+            self.rect().adjusted(0, 0, 0, -20),
+            Qt.AlignBottom | Qt.AlignCenter,
+            f"Loading... {self.progress}%"
+        )
+
+
+import os, sys
 
 if __name__ == "__main__":
-    print("[*] Brown Launcher Console - Release V1 Launcher")
+    print("[*] CascadeMC - logs")
     time.sleep(0.3)
-    print("[*] Aviable version(s) : Every Vanilla + Fabric Versions + Server Support")
+    print("[*] Starting...")
+    # we je sais ca charge pas vraiment un truc mais c'est pour l'estetique tkt
     time.sleep(0.5)
-    print("[*] New Update : Added Server Creation -> Broken for now")
-    print("[*] This window will be used to show you logs, you cant disable it for good reasons")
+    print("[*] Done")
+    print("[*] This window will be used to show game logs!")
 
     app = QApplication(sys.argv)
     app.setStyleSheet(STYLE)
 
+    # display splash
+    splash = SplashScreen()
+    splash.show()
+    
+    # stackoverflow thing that someone told it was required
+    app.processEvents()
+    
+    # fake waiting time
+    QTimer.singleShot(2000, lambda: splash.close())
+    
+    # display launcher
     window = LauncherUI()
-    window.show()
+    
+    # show launcher after splash close
+    QTimer.singleShot(2000, window.show)
+    
     sys.exit(app.exec())
