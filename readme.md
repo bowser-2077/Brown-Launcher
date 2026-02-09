@@ -1,6 +1,7 @@
 # CascadeMC
 
-<img width="500" height="500" alt="ChatGPT_Image_Feb_9__2026__04_42_05_PM-removebg-preview" src="https://github.com/user-attachments/assets/5e444b27-8aa7-4477-a9cc-458685f79424" />
+<img width="500" height="500" alt="ChatGPT_Image_Feb_9__2026__04_42_05_PM-removebg-preview(1)" src="https://github.com/user-attachments/assets/dbd30ded-03b9-4b7a-acbc-7f939db2026a" />
+
 
 
 
