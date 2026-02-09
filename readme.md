@@ -69,8 +69,8 @@ If you fork this repository, please credit me somewhere, thanks!
 
  - Mod Support by default -> Done
  - Multiple Versions Support -> Done
- - Better Interface -> Working on it
- - Mods Marketplace? -> Idea for now
+ - Better Interface -> Done
+ - Mods Marketplace? -> Maybe...
  - Cosmetics?? -> (no)
 
 # Gallery
