@@ -84,9 +84,9 @@ python main.py
 
 ### 📦 Compiled Version (Experimental)
 
-**Step 1** – Download the latest release
-**Step 2** – Extract the files
-**Step 3** – Launch `CascadeMC.exe`
+**Step 1** – Download the latest release  
+**Step 2** – Extract the files  
+**Step 3** – Launch `CascadeMC.exe`  
 
 ⚠️ If it does not work, please use the **source code version**.
 
