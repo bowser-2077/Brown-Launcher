@@ -1,9 +1,0 @@
-options = {
-    ...
-    "jvmArguments": [
-        f"-javaagent:https://auth-demo.yushi.moe",
-        f"-Xmx{ram}"
-    ],
-}
-
-// This file is not used for now, probaly in a future update.
