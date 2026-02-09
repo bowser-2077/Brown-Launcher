@@ -77,6 +77,9 @@ python main.py
 
 ✅ Your launcher is now ready!
 
+[!NOTE]
+> On Linux based systems, you will need to create a venv to launch it.
+
 ---
 
 ### 📦 Compiled Version (Experimental)
